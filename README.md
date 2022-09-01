@@ -5,14 +5,42 @@
 [PostCSS]: https://github.com/postcss/postcss
 
 ```css
-.foo {
-  /* Input example */
+@darkmode .foo {
+  background: red;
 }
 ```
 
 ```css
+@media (prefers-color-scheme: dark) {
+	.foo:not([data-theme="light"] .foo):not([data-theme="light"]) {
+		background: red;
+	}
+}
+
+.foo[data-theme="dark"] {
+	background: red
+}
+```
+
+With Sass
+```sass
+.foo {  
+  @darkmode {
+    color: pink;
+  }
+}
+```
+
+```sass
 .foo {
-  /* Output example */
+  @media (prefers-color-scheme: dark) {
+    &:not([data-theme="light"] &):not([data-theme="light"]) {
+      color: pink;
+    }
+  }
+  &[data-theme="dark"] {
+    color: pink
+  }
 }
 ```
 
