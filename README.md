@@ -5,8 +5,10 @@
 [PostCSS]: https://github.com/postcss/postcss
 
 ```css
-@darkmode .foo {
-  background: red;
+@darkmode {
+  .foo {
+    background: red;
+  }
 }
 ```
 
@@ -17,8 +19,8 @@
 	}
 }
 
-.foo[data-theme="dark"] {
-	background: red
+.foo[data-theme="dark"], [data-theme="dark"] .foo {
+	background: red;
 }
 ```
 
@@ -26,21 +28,20 @@ With Sass
 ```sass
 .foo {  
   @darkmode {
-    color: pink;
+    color: red;
   }
 }
 ```
 
 ```sass
-.foo {
-  @media (prefers-color-scheme: dark) {
-    &:not([data-theme="light"] &):not([data-theme="light"]) {
-      color: pink;
-    }
-  }
-  &[data-theme="dark"] {
-    color: pink
-  }
+@media (prefers-color-scheme: dark) {
+	.foo:not([data-theme="light"] .foo):not([data-theme="light"]) {
+		background: red;
+	}
+}
+
+.foo[data-theme="dark"], [data-theme="dark"] .foo {
+	background: red;
 }
 ```
 
