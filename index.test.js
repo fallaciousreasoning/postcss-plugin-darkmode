@@ -2,9 +2,9 @@ const postcss = require('postcss')
 
 const plugin = require('./')
 
-async function run (input, output, opts = { }) {
+async function run(input, output, opts = {}) {
   let result = await postcss([plugin(opts)]).process(input, { from: undefined })
-  const removeWhiteSpace = /(^\s+\n$)|(\t| )/g
+  const removeWhiteSpace = /(^\s*\n)|(\t| )/gm
   const sansWhiteSpace = text => text.replace(removeWhiteSpace, '');
 
   expect(sansWhiteSpace(result.toString())).toEqual(sansWhiteSpace(output))
@@ -51,11 +51,11 @@ it('Converts the base case', async () => {
   .component {
     background: var(--\\.component_background);
     flex-direction: var(--\\.component_flex-direction);
-  }`, { })
-  })
+  }`, {})
+})
 
-  test('dark mode only properties are converted', async () => {
-    await run(`.component {
+test('dark mode only properties are converted', async () => {
+  await run(`.component {
     background: pink;
   }
 
@@ -87,5 +87,5 @@ it('Converts the base case', async () => {
   .component {
       background: var(--\\.component_background);
       color: var(--\\.component_color);
-  }`, { })
+  }`, {})
 })
