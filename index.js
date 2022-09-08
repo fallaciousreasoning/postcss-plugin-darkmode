@@ -1,69 +1,111 @@
-const indent = (text, level) => text.split('\n')
-    .map(line => ''.padStart(level, '\t') + line)
-    .join('\n')
+const { Declaration, AtRule, Rule } = require('postcss');
 
-const renderRule = (rule, transform) => {
-    if (!rule.selector) {
-        console.log(rule.toString())
-        return ''
-    }
-    const selectors = rule.selector.split(',').map(s => s.trim()).map(transform)
-    return `${selectors.join(', ')} {
-${indent(rule.nodes.map(n => n.toString() + ';').join('\n'), 1)}
-}`
+const getPropertyName = (selector, decl) => {
+    const regex = /([^A-Za-z0-9\-_])/g
+    return `--${selector}_${decl.prop}`
+        .replace(' ', '_')
+        .replace(regex, '\\$1')
 }
 
-const generateNestedDarkModeSelectors = (levels, componentSelector, options) => {
-    if (levels === 0) return '';
+module.exports = (options = { forceGlobal: false }) => {
+    const rules = {};
+    const nodesToDelete = new Set();
+    const findMatchingLightRules = root => {
+        const selectors = new Set(Object.keys(rules));
+        root.each(rule => {
+            if (rule.type !== 'rule') return;
 
-    const generateNestedDarkModeSelector = (level) => {
-        let selector = '[data-theme=dark]'
-        while (--level > 0)
-            selector = '[data-theme=dark] [data-theme=light] ' + selector;
+            for (const lightSelector of rule.selectors) {
+                if (!selectors.has(lightSelector)) continue
+                rules[lightSelector].light = rule;
+            }
+        })
+    }
 
-        // Mode can be undefined, global, or host-context. This let's us wrap
-        // the selector in different scenarios.
-        const getParentSelector = (s) => {
-            if (options.useHostContext) s = `:host-context(${s})`;
-            if (options.forceGlobal) s = `:global(${s})`;
-            return s;
+    const extractDarkProperties = (selector, lightAndDark) => {
+        // Selector is the same for light and for dark.
+        const properties = {}
+
+        if (!lightAndDark.light) {
+            lightAndDark.light = new Rule({ selector: selector })
+            lightAndDark.dark.root().prepend(lightAndDark.light);
         }
 
-        // The :not needs to be wrapped in a :host-context if we should use the
-        // host context.
-        const getNotSelector = (s) => options.useHostContext ? `:host-context(${s})` : s;
-        return `${getParentSelector(selector)} ${componentSelector}:not(${getNotSelector(selector + ' [data-theme=light]')} ${componentSelector}):not([data-theme=light])`
+        lightAndDark.dark.each(decl => {
+            if (!decl.prop) return;
+
+            const propertyName = getPropertyName(selector, decl)
+            properties[propertyName] = {
+                dark: decl,
+                light: {} // Empty so we set the value to undefined if there's no light property
+            }
+        })
+
+        lightAndDark.light.each(decl => {
+            const propertyName = getPropertyName(selector, decl)
+            if (!properties[propertyName]) return
+            properties[propertyName].light = decl
+        });
+
+        const darkVariables = Object.entries(properties)
+            .map(([key, decl]) => new Declaration({ prop: key, value: decl.dark.value }))
+
+        const lightVariables = Object.entries(properties)
+            .map(([key, decl]) => new Declaration({ prop: key, value: decl.light.value || 'unset' }))
+
+        const targetRule = new Rule({
+            selector: selector,
+            nodes: Object.entries(properties)
+                .map(([property, decls]) => new Declaration({ prop: decls.dark.prop, value: `var(${property})` }))
+        });
+        lightAndDark.light.parent.append(targetRule);
+
+        // Remove all of the overridden light rules.
+        for (const decl of Object.values(properties)) {
+            if ('remove' in decl.light)
+                nodesToDelete.add(decl.light);
+        }
+
+        return {
+            dark: darkVariables,
+            light: lightVariables
+        }
     }
 
-    return ',\n' + Array.from(Array(levels).keys()).map(i => generateNestedDarkModeSelector(i + 1))
-        .join(',\n')
-}
-
-const getNestingLevel = (params) => {
-    const result = /\(levels: (\d+)\)/g.exec(params);
-    if (result && result[1]) {
-        const parsed = parseInt(result[1]);
-        return isNaN(parsed) ? 2 : parsed;
-    }
-    return 2;
-}
-
-module.exports = (options = { forceGlobal: false, useHostContext: false }) => {
     return {
         postcssPlugin: 'darkmode',
         AtRule: {
-            darkmode: atRule => {
-                const nesting = getNestingLevel(atRule.params);
-                const queryBody = atRule.nodes.map(n => renderRule(n, s => `${s}:not([data-theme] ${s}):not([data-theme])`)).join('\n\n');
-                const attributeBody = atRule.nodes.map(n => renderRule(n, s => `${s}[data-theme=dark]${generateNestedDarkModeSelectors(nesting, s, options)}`)).join('\n\n')
-
-                atRule.replaceWith(`
-@media (prefers-color-scheme: dark) {
-${indent(queryBody, 1)}
-}
-
-${attributeBody}`)
+            darkmode: (atRule) => {
+                atRule.each(rule => {
+                    for (const selector of rule.selectors)
+                        rules[selector] = { dark: rule }
+                })
+                nodesToDelete.add(atRule)
             }
+        },
+        OnceExit: (root) => {
+            const darkProperties = [];
+            const lightProperties = [];
+
+            findMatchingLightRules(root);
+            for (const [selector, rule] of Object.entries(rules)) {
+                const { dark, light } = extractDarkProperties(selector, rule)
+                darkProperties.push(...dark);
+                lightProperties.push(...light);
+            }
+
+            const lightRule = new Rule({ selectors: [':root', '[data-theme=light]'], nodes: lightProperties })
+            const darkRule = new Rule({ selector: '[data-theme=dark]', nodes: darkProperties })
+            const mediaQuery = new AtRule({
+                name: 'media', params: '(prefers-color-scheme: dark)', nodes: [
+                    new Rule({ selector: ':root', nodes: darkProperties })
+                ]
+            });
+
+            root.prepend(lightRule, darkRule, mediaQuery);
+
+            for (const node of nodesToDelete)
+                node.remove()
         }
     }
 }
