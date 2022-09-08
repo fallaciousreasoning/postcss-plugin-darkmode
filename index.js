@@ -106,6 +106,11 @@ module.exports = (options = { forceGlobal: false }) => {
 
             for (const node of nodesToDelete)
                 node.remove()
+
+            // Remove all empty nodes
+            root.each(node => {
+                if (node.nodes.length === 0) node.remove();
+            })
         }
     }
 }

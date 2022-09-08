@@ -83,9 +83,6 @@ it('Converts darkmode only properties', async () => {
   }
 
   .component {
-  }
-
-  .component {
       background: var(--\\.component_background);
       color: var(--\\.component_color);
   }`, {})
@@ -117,10 +114,6 @@ it('Converts nested selectors', async () => {
     }
 
     .component .foo {
-
-    }
-    
-    .component .foo {
       background: var(--\\.component_\\.foo_background);
     }`)
 })
@@ -151,10 +144,6 @@ it('Converts sibling selectors', async () => {
     }
 
     .component + .foo {
-
-    }
-    
-    .component + .foo {
       background: var(--\\.component_\\+_\\.foo_background);
     }`)
 })
@@ -184,10 +173,6 @@ it('Converts child selectors', async () => {
       }
     }
 
-    .component > .foo {
-
-    }
-    
     .component > .foo {
       background: var(--\\.component_\\>_\\.foo_background);
     }`)
