@@ -208,3 +208,40 @@ it('Converts general sibling selectors', async () => {
     }`)
 })
 
+it('Converts multi selectors (light and dark same)', async () => {
+  await run(`
+    .component, .foo {
+      background: pink;
+    }
+
+    @darkmode {
+      .component, .foo {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_background: pink;
+      --\\.foo_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_background: red;
+      --\\.foo_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_background: red;
+        --\\.foo_background: red;
+      }
+    }
+
+    .component {
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      background: var(--\\.foo_background);
+    }`)
+})
+
