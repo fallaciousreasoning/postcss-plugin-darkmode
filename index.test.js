@@ -51,3 +51,40 @@ it('Converts the base case', async () => {
   flex-direction: var(--\\.component_flex-direction);
 }`, { })
 })
+
+test('dark mode only properties are converted', async () => {
+  await run(`.component {
+  background: pink;
+}
+
+@darkmode {
+  .component {
+    background: red;
+    color: white;
+  }
+}`, `:root, [data-theme=light] {
+  --\\.component_background: pink;
+  --\\.component_color: unset;
+}
+
+[data-theme=dark] {
+  --\\.component_background: red;
+  --\\.component_color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --\\.component_background: red;
+    --\\.component_color: white;
+  }
+}
+
+.component {
+}
+
+.component {
+  background: var(--\\.component_background);
+  color: var(--\\.component_color);
+}`, { })
+})
