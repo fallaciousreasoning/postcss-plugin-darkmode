@@ -178,3 +178,33 @@ it('Converts child selectors', async () => {
     }`)
 })
 
+it('Converts general sibling selectors', async () => {
+  await run(`
+    .component ~ .foo {
+      background: pink;
+    }
+
+    @darkmode {
+      .component ~ .foo {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_\\~_\\.foo_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_\\~_\\.foo_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_\\~_\\.foo_background: red;
+      }
+    }
+
+    .component ~ .foo {
+      background: var(--\\.component_\\~_\\.foo_background);
+    }`)
+})
+
