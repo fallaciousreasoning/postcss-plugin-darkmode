@@ -85,7 +85,6 @@ it('Converts the base case', async () => {
   }
 
   .component {
-
       background: var(--\\.component_background);
       color: var(--\\.component_color);
   }`, { })
