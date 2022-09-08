@@ -245,3 +245,40 @@ it('Converts multi selectors (light and dark same)', async () => {
     }`)
 })
 
+it('Converts multi selectors (light subset of dark)', async () => {
+  await run(`
+    .component {
+      background: pink;
+    }
+
+    @darkmode {
+      .component, .foo {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_background: pink;
+      --\\.foo_background: unset;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_background: red;
+      --\\.foo_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_background: red;
+        --\\.foo_background: red;
+      }
+    }
+
+    .component {
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      background: var(--\\.foo_background);
+    }`)
+})
+
