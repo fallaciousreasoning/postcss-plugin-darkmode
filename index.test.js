@@ -8,10 +8,46 @@ async function run (input, output, opts = { }) {
   expect(result.warnings()).toHaveLength(0)
 }
 
-/* Write tests here
+/* Write tests here */
 
-it('does something', async () => {
-  await run('a{ }', 'a{ }', { })
+it('Converts the base case', async () => {
+  await run(`.component {
+  padding: 12px;
+  background: pink;
+  display: flex;
+  flex-direction: row;
+}
+
+@darkmode {
+  .component {
+    background: red;
+    flex-direction: column;
+  }
+}`, `:root, [data-theme=light] {
+  --\\.component_background: pink;
+  --\\.component_flex-direction: row;
+}
+
+[data-theme=dark] {
+  --\\.component_background: red;
+  --\\.component_flex-direction: column;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --\\.component_background: red;
+    --\\.component_flex-direction: column;
+  }
+}
+
+.component {
+  padding: 12px;
+  display: flex;
+}
+
+.component {
+  background: var(--\\.component_background);
+  flex-direction: var(--\\.component_flex-direction);
+}`, { })
 })
-
-*/
