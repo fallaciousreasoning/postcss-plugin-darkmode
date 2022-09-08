@@ -5,43 +5,92 @@
 [PostCSS]: https://github.com/postcss/postcss
 
 ```css
+.foo {
+  padding: 12px;
+  background: pink;
+
+  display: flex;
+  flex-direction: column;
+}
+
 @darkmode {
   .foo {
     background: red;
+    flex-direction: row;
   }
 }
 ```
 
 ```css
-@media (prefers-color-scheme: dark) {
-	.foo:not([data-theme="light"] .foo):not([data-theme="light"]) {
-		background: red;
-	}
+:root, [data-theme=light] {
+  --\.foo_background: pink;
+  --\.foo_flex-direction: column;
 }
 
-.foo[data-theme="dark"], [data-theme="dark"] .foo {
-	background: red;
+[data-theme=dark] {
+  --\.foo_background: red;
+  --\.foo_flex-direction: row;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --\.foo_background: red;
+    --\.foo_flex-direction: row;
+  }
+}
+
+.foo {
+  padding: 12px;
+  display: flex;
+}
+
+.foo {
+  background: var(--\.foo_background);
+  flex-direction: var(--\.foo_flex-direction);
 }
 ```
 
 With Sass
 ```sass
-.foo {  
+.foo {
+  padding: 12px;
+  background: pink;
+  display: flex;
+  flex-direction: column;
+
   @darkmode {
-    color: red;
+    background: red;
+    flex-direction: row;
   }
 }
 ```
 
-```sass
-@media (prefers-color-scheme: dark) {
-	.foo:not([data-theme="light"] .foo):not([data-theme="light"]) {
-		background: red;
-	}
+```css
+:root, [data-theme=light] {
+  --\.foo_background: pink;
+  --\.foo_flex-direction: column;
 }
 
-.foo[data-theme="dark"], [data-theme="dark"] .foo {
-	background: red;
+[data-theme=dark] {
+  --\.foo_background: red;
+  --\.foo_flex-direction: row;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --\.foo_background: red;
+    --\.foo_flex-direction: row;
+  }
+}
+
+.foo {
+  padding: 12px;
+  display: flex;
+}
+
+.foo {
+  background: var(--\.foo_background);
+  flex-direction: var(--\.foo_flex-direction);
 }
 ```
 
