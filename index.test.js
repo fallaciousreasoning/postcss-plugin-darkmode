@@ -55,7 +55,7 @@ it('Converts the base case', async () => {
   }`, {})
 })
 
-test('dark mode only properties are converted', async () => {
+it('Converts darkmode only properties', async () => {
   await run(`.component {
     background: pink;
   }
@@ -90,3 +90,72 @@ test('dark mode only properties are converted', async () => {
       color: var(--\\.component_color);
   }`, {})
 })
+
+it('Converts nested selectors', async () => {
+  await run(`
+    .component .foo {
+      background: pink;
+    }
+
+    @darkmode {
+      .component .foo {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_\\.foo_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_\\.foo_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_\\.foo_background: red;
+      }
+    }
+
+    .component .foo {
+
+    }
+    
+    .component .foo {
+      background: var(--\\.component_\\.foo_background);
+    }`)
+})
+
+it('Converts sibling selectors', async () => {
+  await run(`
+    .component + .foo {
+      background: pink;
+    }
+
+    @darkmode {
+      .component + .foo {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_\\+_\\.foo_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_\\+_\\.foo_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_\\+_\\.foo_background: red;
+      }
+    }
+
+    .component + .foo {
+
+    }
+    
+    .component + .foo {
+      background: var(--\\.component_\\+_\\.foo_background);
+    }`)
+})
+

@@ -3,7 +3,7 @@ const { Declaration, AtRule, Rule } = require('postcss');
 const getPropertyName = (selector, decl) => {
     const regex = /([^A-Za-z0-9\-_])/g
     return `--${selector}_${decl.prop}`
-        .replace(' ', '_')
+        .replace(/\s+/g, '_')
         .replace(regex, '\\$1')
 }
 
