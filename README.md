@@ -23,6 +23,9 @@ used in Light & Dark mode into CSS variables.
 </html>
 ```
 
+## Examples
+
+### CSS
 ```css
 .foo {
   padding: 12px;
@@ -66,7 +69,8 @@ used in Light & Dark mode into CSS variables.
 }
 ```
 
-With Sass
+### Sass
+
 ```sass
 .foo {
   padding: 12px;
@@ -106,6 +110,13 @@ With Sass
   flex-direction: var(--\.foo_flex-direction);
 }
 ```
+
+## Options
+
+|                | Default | Description | Example Alternative
+| -------------- | ------- | ----------- | ------
+| Light Selector | `[data-theme=light]` | Used to select an elements with light mode forced | `.light`
+| Dark Selector | `[data-theme=dark]` | Used to select elements with dark mode forced. | `.dark`
 
 ## Usage
 
