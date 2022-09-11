@@ -42,9 +42,6 @@
 .foo {
   padding: 12px;
   display: flex;
-}
-
-.foo {
   background: var(--\.foo_background);
   flex-direction: var(--\.foo_flex-direction);
 }
@@ -86,9 +83,6 @@ With Sass
 .foo {
   padding: 12px;
   display: flex;
-}
-
-.foo {
   background: var(--\.foo_background);
   flex-direction: var(--\.foo_flex-direction);
 }
