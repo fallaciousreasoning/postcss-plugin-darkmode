@@ -18,15 +18,23 @@ const splitRule = (rule, selectorToExtract) => {
     const copy = [...cloned.selectors];
     copy.splice(index, 1);
     cloned.selectors = copy;
-  
-  	// If we don't set this all the formatting breaks.
-  	cloned.raws.before = '\n';
+
+    // If we don't set this all the formatting breaks.
+    cloned.raws.before = '\n';
 
     // Set the selectors on the light rule to be just the light selector.
     rule.selector = selectorToExtract;
 }
 
-module.exports = (options = { forceGlobal: false }) => {
+const defaultOptions = {
+    forceGlobal: false,
+    darkSelector: '[data-theme=dark]',
+    lightSelector: '[data-theme=light]'
+}
+
+module.exports = (options = defaultOptions) => {
+    options = { ...defaultOptions, ...options };
+
     const rules = {};
     const nodesToDelete = new Set();
     const findMatchingLightRules = root => {
@@ -84,7 +92,7 @@ module.exports = (options = { forceGlobal: false }) => {
             .map(([key, decl]) => new Declaration({ prop: key, value: decl.light.value || 'unset' }))
 
         for (const [property, decls] of Object.entries(properties)) {
-            lightAndDark.light.push(new Declaration({ prop: decls.dark.prop, value: `var(${property})`}));
+            lightAndDark.light.push(new Declaration({ prop: decls.dark.prop, value: `var(${property})` }));
         }
 
         // Remove all of the overridden light rules.
@@ -121,8 +129,8 @@ module.exports = (options = { forceGlobal: false }) => {
                 lightProperties.push(...light);
             }
 
-            const lightRule = new Rule({ selectors: [':root', '[data-theme=light]'], nodes: lightProperties })
-            const darkRule = new Rule({ selector: '[data-theme=dark]', nodes: darkProperties })
+            const lightRule = new Rule({ selectors: [':root', options.lightSelector], nodes: lightProperties })
+            const darkRule = new Rule({ selector: options.darkSelector, nodes: darkProperties })
             const mediaQuery = new AtRule({
                 name: 'media', params: '(prefers-color-scheme: dark)', nodes: [
                     new Rule({ selector: ':root', nodes: darkProperties })

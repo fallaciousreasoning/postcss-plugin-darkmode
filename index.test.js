@@ -52,6 +52,44 @@ it('Converts the base case', async () => {
   }`, {})
 })
 
+it('Selectors can be overridden', async () => {
+  await run(`.component {
+    padding: 12px;
+    background: pink;
+    display: flex;
+    flex-direction: row;
+  }
+
+  @darkmode {
+    .component {
+      background: red;
+      flex-direction: column;
+    }
+  }`, `:root, .light {
+    --\\.component_background: pink;
+    --\\.component_flex-direction: row;
+  }
+
+  .dark {
+    --\\.component_background: red;
+    --\\.component_flex-direction: column;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --\\.component_background: red;
+      --\\.component_flex-direction: column;
+    }
+  }
+
+  .component {
+    padding: 12px;
+    display: flex;
+    background: var(--\\.component_background);
+    flex-direction: var(--\\.component_flex-direction);
+  }`, { lightSelector: '.light', darkSelector: '.dark' })
+})
+
 it('Handles no dark mode', async () => {
   await run(`
   .component {
