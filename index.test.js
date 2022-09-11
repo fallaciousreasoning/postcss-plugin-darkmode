@@ -510,3 +510,56 @@ it('Converts multi selectors (dark subset of light, with unset)', async () => {
     }`)
 })
 
+it('Converts multi selectors (weird intersection)', async () => {
+  await run(`
+    .component, .foo {
+      margin: 8px;
+      background: pink;
+    }
+    
+    @darkmode {
+      .component, .frob {
+        padding: 12px;
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_padding: unset;
+      --\\.component_background: pink;
+      --\\.frob_padding: unset;
+      --\\.frob_background: unset;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_padding: 12px;
+      --\\.component_background: red;
+      --\\.frob_padding: 12px;
+      --\\.frob_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+      --\\.component_padding: 12px;
+      --\\.component_background: red;
+      --\\.frob_padding: 12px;
+      --\\.frob_background: red;
+      }
+    }
+
+    .frob {
+      padding: var(--\\.frob_padding);
+      background: var(--\\.frob_background);
+    }
+
+    .component {
+      margin: 8px;
+      padding: var(--\\.component_padding);
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      margin: 8px;
+      background: pink;
+    }`)
+})
+
