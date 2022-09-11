@@ -13,11 +13,14 @@ const splitRule = (rule, selectorToExtract) => {
 
     // Remove the light selector from the cloned rule.
     // Note: Directly splicing |selectors| has no effect, we have
-    // to set |selector|.
+    // to set a varible.
     const index = cloned.selectors.indexOf(selectorToExtract);
     const copy = [...cloned.selectors];
     copy.splice(index, 1);
-    cloned.selector = copy.join(', ');
+    cloned.selectors = copy;
+  
+  	// If we don't set this all the formatting breaks.
+  	cloned.raws.before = '\n';
 
     // Set the selectors on the light rule to be just the light selector.
     rule.selector = selectorToExtract;
