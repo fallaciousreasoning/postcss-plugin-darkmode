@@ -399,3 +399,114 @@ it('Converts multi selectors (light subset of dark, with remainder)', async () =
       background: var(--\\.component_background);
     }`)
 })
+
+it('Converts multi selectors (dark subset of light)', async () => {
+  await run(`
+    .component, .foo {
+      background: pink;
+    }
+
+    @darkmode {
+      .component {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_background: red;
+      }
+    }
+
+    .component {
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      background: pink;
+    }`)
+})
+
+it('Converts multi selectors (dark subset of light, with remainder)', async () => {
+  await run(`
+    .component, .foo {
+      padding: 12px;
+      background: pink;
+    }
+
+    @darkmode {
+      .component {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_background: red;
+      }
+    }
+
+    .component {
+      padding: 12px;
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      padding: 12px;
+      background: pink;
+    }`)
+})
+
+it('Converts multi selectors (dark subset of light, with unset)', async () => {
+  await run(`
+    .component, .foo {
+      background: pink;
+    }
+    
+    @darkmode {
+      .component {
+        padding: 12px;
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_padding: unset;
+      --\\.component_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_padding: 12px;
+      --\\.component_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+      --\\.component_padding: 12px;
+      --\\.component_background: red;
+      }
+    }
+
+    .component {
+      padding: var(--\\.component_padding);
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      background: pink;
+    }`)
+})
+
