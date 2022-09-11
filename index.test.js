@@ -47,9 +47,6 @@ it('Converts the base case', async () => {
   .component {
     padding: 12px;
     display: flex;
-  }
-
-  .component {
     background: var(--\\.component_background);
     flex-direction: var(--\\.component_flex-direction);
   }`, {})
@@ -245,6 +242,46 @@ it('Converts multi selectors (light and dark same)', async () => {
     }`)
 })
 
+it('Converts multi selectors (light and dark same, with remainder)', async () => {
+  await run(`
+    .component, .foo {
+      padding: 12px;
+      background: pink;
+    }
+
+    @darkmode {
+      .component, .foo {
+        background: red;
+      }
+    }`, `
+    :root, [data-theme=light] {
+      --\\.component_background: pink;
+      --\\.foo_background: pink;
+    }
+    
+    [data-theme=dark] {
+      --\\.component_background: red;
+      --\\.foo_background: red;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_background: red;
+        --\\.foo_background: red;
+      }
+    }
+
+    .component {
+      padding: 12px;
+      background: var(--\\.component_background);
+    }
+    
+    .foo {
+      padding: 12px;
+      background: var(--\\.foo_background);
+    }`)
+})
+
 it('Converts multi selectors (light subset of dark)', async () => {
   await run(`
     .component {
@@ -272,43 +309,9 @@ it('Converts multi selectors (light subset of dark)', async () => {
         --\\.foo_background: red;
       }
     }
-
-    .component {
-      background: var(--\\.component_background);
-    }
     
     .foo {
       background: var(--\\.foo_background);
-    }`)
-})
-
-it('Converts multi selectors (light subset of dark)', async () => {
-  await run(`
-    .component, .foo {
-      background: pink;
-    }
-
-    @darkmode {
-      .component {
-        background: red;
-      }
-    }`, `
-    :root, [data-theme=light] {
-      --\\.component_background: pink;
-    }
-    
-    [data-theme=dark] {
-      --\\.component_background: red;
-    }
-    
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --\\.component_background: red;
-      }
-    }
-    
-    .foo {
-      background: pink;
     }
 
     .component {

@@ -80,12 +80,15 @@ module.exports = (options = { forceGlobal: false }) => {
         const lightVariables = Object.entries(properties)
             .map(([key, decl]) => new Declaration({ prop: key, value: decl.light.value || 'unset' }))
 
-        const targetRule = new Rule({
-            selector: selector,
-            nodes: Object.entries(properties)
-                .map(([property, decls]) => new Declaration({ prop: decls.dark.prop, value: `var(${property})` }))
-        });
-        lightAndDark.light.parent.append(targetRule);
+        // const targetRule = new Rule({
+        //     selector: selector,
+        //     nodes: Object.entries(properties)
+        //         .map(([property, decls]) => new Declaration({ prop: decls.dark.prop, value: `var(${property})` }))
+        // });
+        // lightAndDark.light.parent.append(targetRule);
+        for (const [property, decls] of Object.entries(properties)) {
+            lightAndDark.light.push(new Declaration({ prop: decls.dark.prop, value: `var(${property})`}));
+        }
 
         // Remove all of the overridden light rules.
         for (const decl of Object.values(properties)) {
