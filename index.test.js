@@ -306,12 +306,12 @@ it('Converts multi selectors (light subset of dark)', async () => {
         --\\.component_background: red;
       }
     }
-
-    .component {
-      background: var(--\\.component_background);
-    }
     
     .foo {
       background: pink;
+    }
+
+    .component {
+      background: var(--\\.component_background);
     }`)
 })

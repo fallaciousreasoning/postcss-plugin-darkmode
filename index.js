@@ -7,6 +7,22 @@ const getPropertyName = (selector, decl) => {
         .replace(regex, '\\$1')
 }
 
+const splitRule = (rule, selectorToExtract) => {
+    // |cloneAfter|, so in an |each| loop, the new rule will be processed.
+    const cloned = rule.cloneAfter();
+
+    // Remove the light selector from the cloned rule.
+    // Note: Directly splicing |selectors| has no effect, we have
+    // to set |selector|.
+    const index = cloned.selectors.indexOf(selectorToExtract);
+    const copy = [...cloned.selectors];
+    copy.splice(index, 1);
+    cloned.selector = copy.join(', ');
+
+    // Set the selectors on the light rule to be just the light selector.
+    rule.selector = selectorToExtract;
+}
+
 module.exports = (options = { forceGlobal: false }) => {
     const rules = {};
     const nodesToDelete = new Set();
@@ -15,9 +31,20 @@ module.exports = (options = { forceGlobal: false }) => {
         root.each(rule => {
             if (rule.type !== 'rule') return;
 
-            for (const lightSelector of rule.selectors) {
+            for (const lightSelector of [...rule.selectors]) {
                 if (!selectors.has(lightSelector)) continue
+
+                // If the rule has multiple selectors, we need to split the the
+                // rule apart:
+                // For example, when processing the rule .frob:
+                // .foo, .frob, .bar { background: red; }
+                // should become
+                // .frob { background: red; }
+                // .foo, .bar { background: red; }
+                if (rule.selectors.length !== 1) splitRule(rule, lightSelector);
+
                 rules[lightSelector].light = rule;
+                break;
             }
         })
     }
