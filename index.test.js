@@ -52,6 +52,48 @@ it('Converts the base case', async () => {
   }`, {})
 })
 
+it('Handles no dark mode', async () => {
+  await run(`
+  .component {
+    background: red;
+    color: white;
+  }`, `
+  .component {
+      background: red;
+      color: white;
+  }`, {})
+})
+
+it('Handles no light mode', async () => {
+  await run(`
+  @darkmode {
+    .component {
+      background: red;
+      color: white;
+    }
+  }`, `:root, [data-theme=light] {
+    --\\.component_background: unset;
+    --\\.component_color: unset;
+  }
+
+  [data-theme=dark] {
+    --\\.component_background: red;
+    --\\.component_color: white;
+  }
+
+  @media (prefers-color-scheme: dark) {
+      :root {
+        --\\.component_background: red;
+        --\\.component_color: white;
+      }
+  }
+
+  .component {
+      background: var(--\\.component_background);
+      color: var(--\\.component_color);
+  }`, {})
+})
+
 it('Converts darkmode only properties', async () => {
   await run(`.component {
     background: pink;

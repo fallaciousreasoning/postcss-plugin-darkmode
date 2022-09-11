@@ -126,7 +126,10 @@ module.exports = (options = { forceGlobal: false }) => {
                 ]
             });
 
-            root.prepend(lightRule, darkRule, mediaQuery);
+            // Only append our new rules if they're going to change something.
+            // (they won't if there are no @darkmode rules in this sheet).
+            if (lightProperties.length || darkProperties.length)
+                root.prepend(lightRule, darkRule, mediaQuery);
 
             for (const node of nodesToDelete)
                 node.remove()
