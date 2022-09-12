@@ -27,13 +27,12 @@ const splitRule = (rule, selectorToExtract) => {
 }
 
 const defaultOptions = {
-    forceGlobal: false,
     darkSelector: '[data-theme=dark]',
     lightSelector: '[data-theme=light]'
 }
 
 /**
- * @param {{ forceGlobal: boolean, darkSelector: string, lightSelector: string }} options The options for configuring the selectors for darkmode.
+ * @param {{ darkSelector: string, lightSelector: string }} options The options for configuring the selectors for darkmode.
  */
 module.exports = (options) => {
     options = { ...defaultOptions, ...options };
